@@ -280,18 +280,3 @@ new NOPE({
   },
 });
 ```
-
-
----
-
-## Sanitization modes (v0.1.0)
-
-`sanitize()` supports three modes via `sanitizeMode` (takes precedence over the legacy `sanitizeOutput` boolean):
-
-| Mode | Behavior |
-| --- | --- |
-| `'enforce'` (default) | Redact matches in place with `[REDACTED:label]` |
-| `'report'` | Detect + fire telemetry/`onSanitize`, return output **unmodified** — used by the `audit` preset for true zero-mutation observation |
-| `'off'` | No output scanning |
-
-Binary safety: strings longer than `maxSanitizeLength` (default 64 KB) or containing long unbroken base64 runs are skipped entirely — redacting inside an encoded image/file payload would silently corrupt it.

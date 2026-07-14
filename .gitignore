@@ -1,0 +1,10 @@
+node_modules/
+*.tgz
+.npmrc
+.env
+.env.*
+.claude/
+coverage/
+.tmp/
+tmp/
+test-output/

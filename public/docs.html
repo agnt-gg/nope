@@ -1,0 +1,833 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>N.O.P.E. — Docs</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=League+Spartan:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --color-black-navy: #070710;
+        --color-dark-navy: #10101f;
+        --color-dull-navy: #1f1f2f;
+        --color-duller-navy: #3e405a;
+        --color-med-navy: #7f8193;
+        --color-light-med-navy: #d1d1db;
+        --color-white: #f1f0f5;
+        --color-accent: #fe4e4e;
+      }
+      * {
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+      }
+      *::-webkit-scrollbar {
+        width: 6px;
+      }
+      *::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      *::-webkit-scrollbar-thumb {
+        background: var(--color-duller-navy);
+        border-radius: 3px;
+      }
+      * {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-duller-navy) transparent;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+      }
+      body {
+        font-family: 'Fira Code', monospace;
+        font-size: 13px;
+        line-height: 22px;
+        background: var(--color-black-navy);
+        color: var(--color-med-navy);
+      }
+      a {
+        text-decoration: none;
+        color: inherit;
+      }
+      header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+        padding: 24px 0;
+        background: linear-gradient(180deg, var(--color-black-navy) 60%, transparent 100%);
+      }
+      .header-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 0 32px;
+      }
+      .logo {
+        height: 28px;
+        width: auto;
+      }
+      .nav {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .nav ul {
+        display: flex;
+        gap: 48px;
+        list-style: none;
+      }
+      .nav a {
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--color-duller-navy);
+        position: relative;
+        transition: color 0.3s;
+      }
+      .nav a:hover {
+        color: var(--color-light-med-navy);
+      }
+      .nav li.active a {
+        color: var(--color-white);
+      }
+      .nav li.active a::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: var(--color-accent);
+      }
+      .btn-back {
+        display: inline-block;
+        padding: 8px 24px;
+        font-family: 'League Spartan', sans-serif;
+        font-weight: 700;
+        font-size: 10px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--color-white);
+        background: transparent;
+        border: 1px solid var(--color-accent);
+        transition: background 0.3s;
+        clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+      }
+      .btn-back:hover {
+        background: var(--color-accent);
+      }
+      .docs-wrapper {
+        display: flex;
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 100px 32px 80px;
+        gap: 48px;
+      }
+      .sidebar {
+        position: sticky;
+        top: 100px;
+        flex: 0 0 200px;
+        height: fit-content;
+        border-right: 1px solid var(--color-dull-navy);
+        padding-right: 24px;
+      }
+      .sidebar-label {
+        font-family: 'League Spartan', sans-serif;
+        font-weight: 800;
+        font-size: 11px;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: var(--color-accent);
+        margin-bottom: 20px;
+        opacity: 0.8;
+      }
+      .sidebar ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .sidebar a {
+        display: block;
+        padding: 6px 12px;
+        font-size: 11px;
+        color: var(--color-duller-navy);
+        border-left: 2px solid transparent;
+        transition: all 0.2s;
+      }
+      .sidebar a:hover {
+        color: var(--color-light-med-navy);
+        border-left-color: var(--color-duller-navy);
+      }
+      .sidebar a.active {
+        color: var(--color-white);
+        border-left-color: var(--color-accent);
+      }
+      .docs-content {
+        flex: 1;
+        min-width: 0;
+        max-width: 820px;
+      }
+      .docs-content h1 {
+        font-family: 'League Spartan', sans-serif;
+        font-weight: 900;
+        font-size: 48px;
+        color: var(--color-white);
+        letter-spacing: 4px;
+        margin-bottom: 8px;
+        text-shadow: 0 0 40px rgba(254, 78, 78, 0.15);
+      }
+      .docs-content .tagline {
+        font-size: 14px;
+        color: var(--color-duller-navy);
+        margin-bottom: 48px;
+        letter-spacing: 1px;
+      }
+      .docs-content h2 {
+        font-family: 'League Spartan', sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        letter-spacing: 2px;
+        color: var(--color-white);
+        margin-top: 56px;
+        margin-bottom: 20px;
+        padding-top: 24px;
+        border-top: 1px solid var(--color-dull-navy);
+      }
+      .docs-content h2:first-of-type {
+        margin-top: 0;
+        border-top: none;
+        padding-top: 0;
+      }
+      .docs-content h3 {
+        font-family: 'League Spartan', sans-serif;
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: 1px;
+        color: var(--color-light-med-navy);
+        margin-top: 32px;
+        margin-bottom: 12px;
+      }
+      .docs-content p {
+        margin-bottom: 16px;
+        color: var(--color-med-navy);
+        line-height: 24px;
+      }
+      .docs-content p code {
+        background: var(--color-dark-navy);
+        border: 1px solid var(--color-dull-navy);
+        padding: 2px 7px;
+        font-size: 12px;
+        color: var(--color-light-med-navy);
+      }
+      .code-block {
+        background: var(--color-dark-navy);
+        border: 1px solid var(--color-dull-navy);
+        padding: 20px 24px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+      }
+      .code-block pre {
+        font-family: 'Fira Code', monospace;
+        font-size: 12px;
+        line-height: 21px;
+        color: var(--color-med-navy);
+        margin: 0;
+      }
+      .kw {
+        color: var(--color-accent);
+      }
+      .fn {
+        color: var(--color-light-med-navy);
+      }
+      .str {
+        color: #6bc77a;
+      }
+      .cm {
+        color: var(--color-duller-navy);
+        font-style: italic;
+      }
+      .nr {
+        color: #e5a06e;
+      }
+      .callout {
+        background: rgba(254, 78, 78, 0.04);
+        border-left: 3px solid var(--color-accent);
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        font-size: 12px;
+        line-height: 20px;
+        color: var(--color-light-med-navy);
+      }
+      .docs-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-size: 12px;
+      }
+      .docs-table th {
+        text-align: left;
+        font-weight: 600;
+        color: var(--color-light-med-navy);
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--color-dull-navy);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+      .docs-table td {
+        padding: 10px 16px;
+        border-bottom: 1px solid var(--color-dull-navy);
+        color: var(--color-med-navy);
+      }
+      .docs-table td code {
+        background: var(--color-dark-navy);
+        border: 1px solid var(--color-dull-navy);
+        padding: 1px 6px;
+        font-size: 11px;
+        color: var(--color-accent);
+      }
+      .sev-critical {
+        color: #fe4e4e;
+        font-weight: 600;
+      }
+      .sev-high {
+        color: #ff9500;
+        font-weight: 600;
+      }
+      .sev-medium {
+        color: #ffd700;
+      }
+      @media (max-width: 900px) {
+        .sidebar {
+          display: none;
+        }
+        .docs-wrapper {
+          padding-top: 90px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-inner">
+        <img src="assets/agnt-logo-mark.svg" class="logo" alt="AGNT" />
+        <nav class="nav">
+          <ul>
+            <li><a href="index.html">overview</a></li>
+            <li><a href="index.html#install">install</a></li>
+            <li class="active"><a href="docs.html">docs</a></li>
+          </ul>
+        </nav>
+        <a href="index.html" class="btn-back">Back</a>
+      </div>
+    </header>
+
+    <div class="docs-wrapper">
+      <aside class="sidebar">
+        <div class="sidebar-label">Docs</div>
+        <ul>
+          <li><a href="#quick-start" class="active">Quick Start</a></li>
+          <li><a href="#core-api">Core API</a></li>
+          <li><a href="#configuration">Configuration</a></li>
+          <li><a href="#builtin-rules">Built-in Rules</a></li>
+          <li><a href="#full-example">Full Example</a></li>
+          <li><a href="#api-reference">API Reference</a></li>
+          <li><a href="#advanced">Advanced</a></li>
+        </ul>
+      </aside>
+
+      <main class="docs-content">
+        <h1>NOPE</h1>
+        <p class="tagline">Agent security in one import. Presets to start, fluent builder to customize, one method to scan everything.</p>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- QUICK START                              -->
+        <!-- ════════════════════════════════════════ -->
+
+        <h2 id="quick-start">Quick Start</h2>
+
+        <div class="code-block">
+          <pre>npm install @agnt-gg/nope</pre>
+        </div>
+        <p>Works with ESM and CommonJS. Node 18+.</p>
+
+        <div class="code-block">
+          <pre><span class="kw">import</span> { <span class="fn">NOPE</span> } <span class="kw">from</span> <span class="str">'@agnt-gg/nope'</span>;
+
+<span class="kw">const</span> <span class="fn">nope</span> = <span class="fn">NOPE</span>.<span class="fn">preset</span>(<span class="str">'standard'</span>);
+
+<span class="cm">// Check an action</span>
+<span class="fn">nope</span>.<span class="fn">check</span>({ <span class="fn">command</span>: <span class="str">'DROP TABLE users;'</span> });
+<span class="cm">// → { allowed: false, violations: [{ rule: 'db-drop-table', severity: 'critical' }] }</span>
+
+<span class="cm">// Scan anything — context, MCP tools, plugin code</span>
+<span class="fn">nope</span>.<span class="fn">scan</span>(<span class="fn">contextText</span>);
+<span class="fn">nope</span>.<span class="fn">scan</span>({ <span class="fn">name</span>: <span class="str">'shell'</span>, <span class="fn">description</span>: <span class="str">'Run commands'</span> });
+
+<span class="cm">// Wrap tools — all protection layers active</span>
+<span class="kw">const</span> <span class="fn">safe</span> = <span class="fn">nope</span>.<span class="fn">wrap</span>(<span class="fn">plug</span>.<span class="fn">tools</span>);</pre>
+        </div>
+
+        <h3>Presets</h3>
+        <table class="docs-table">
+          <thead><tr><th>Preset</th><th>Mode</th><th>Threshold</th><th>SSRF</th><th>Scanners</th><th>Telemetry</th></tr></thead>
+          <tbody>
+            <tr><td><code>paranoid</code></td><td>strict</td><td>medium</td><td>enforced</td><td>all on</td><td>on</td></tr>
+            <tr><td><code>standard</code></td><td>strict</td><td>high</td><td>on</td><td>off</td><td>on</td></tr>
+            <tr><td><code>minimal</code></td><td>strict</td><td>high</td><td>off</td><td>off</td><td>off</td></tr>
+            <tr><td><code>audit</code></td><td>audit</td><td>low</td><td>on + log</td><td>all on</td><td>on</td></tr>
+          </tbody>
+        </table>
+
+        <p>Presets accept overrides:</p>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">nope</span> = <span class="fn">NOPE</span>.<span class="fn">preset</span>(<span class="str">'standard'</span>, { <span class="fn">auth</span>: { <span class="fn">verifyToken</span>: <span class="fn">myFn</span> } });</pre>
+        </div>
+
+        <h3>Fluent builder</h3>
+        <p>Chain <code>.with*()</code> instead of nested config objects:</p>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">nope</span> = <span class="kw">new</span> <span class="fn">NOPE</span>()
+  .<span class="fn">withRole</span>(<span class="str">'admin'</span>, <span class="str">'critical'</span>, <span class="str">'warn'</span>)
+  .<span class="fn">withRole</span>(<span class="str">'agent'</span>, <span class="str">'medium'</span>, <span class="str">'strict'</span>)
+  .<span class="fn">withRateLimit</span>(<span class="str">'1m'</span>, <span class="nr">60</span>)
+  .<span class="fn">withSSRF</span>({ <span class="fn">enforced</span>: <span class="kw">true</span> })
+  .<span class="fn">withScanners</span>({ <span class="fn">homograph</span>: <span class="kw">true</span> })
+  .<span class="fn">withTrust</span>(<span class="str">'@agnt-gg/*'</span>);</pre>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- CORE API                                 -->
+        <!-- ════════════════════════════════════════ -->
+
+        <h2 id="core-api">Core API</h2>
+        <p>Four methods cover 90% of use cases.</p>
+
+        <h3>check(action, context?)</h3>
+        <p>Test an action against all rules. Returns <code>{ allowed, violations }</code>.</p>
+        <div class="code-block">
+          <pre><span class="fn">nope</span>.<span class="fn">check</span>({ <span class="fn">command</span>: <span class="str">'DROP TABLE users;'</span> });
+<span class="cm">// → { allowed: false, violations: [{ rule: 'db-drop-table', severity: 'critical' }] }</span>
+
+<span class="fn">nope</span>.<span class="fn">check</span>({ <span class="fn">tool</span>: <span class="str">'exec'</span>, <span class="fn">params</span>: { <span class="fn">command</span>: <span class="str">'ls -la'</span> } });
+<span class="cm">// → { allowed: true, violations: [] }</span>
+
+<span class="cm">// Identity-aware</span>
+<span class="fn">nope</span>.<span class="fn">check</span>({ <span class="fn">command</span>: <span class="str">'shutdown -h now'</span> }, { <span class="fn">role</span>: <span class="str">'admin'</span> });</pre>
+        </div>
+
+        <h3>wrap(tools)</h3>
+        <p>Wrap tools from AI, PLUG, or FLOW. Inputs are checked before execution, outputs are sanitized after. All layers apply automatically.</p>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">safe</span> = <span class="fn">nope</span>.<span class="fn">wrap</span>(<span class="fn">plug</span>.<span class="fn">tools</span>);
+
+<span class="kw">for</span> (<span class="kw">const</span> <span class="fn">t</span> <span class="kw">of</span> <span class="fn">safe</span>) <span class="fn">ai</span>.<span class="fn">tool</span>(<span class="fn">t</span>.<span class="fn">name</span>, <span class="fn">t</span>.<span class="fn">description</span>, <span class="fn">t</span>.<span class="fn">input</span>, <span class="fn">t</span>.<span class="fn">run</span>);
+<span class="cm">// Dangerous inputs → blocked before execution</span>
+<span class="cm">// Leaked secrets → [REDACTED] before reaching LLM</span></pre>
+        </div>
+
+        <h3>scan(input)</h3>
+        <p>One method, dispatches by input type:</p>
+        <div class="code-block">
+          <pre><span class="fn">nope</span>.<span class="fn">scan</span>(<span class="str">'ignore previous instructions...'</span>);       <span class="cm">// prompt injection</span>
+<span class="fn">nope</span>.<span class="fn">scan</span>({ <span class="fn">name</span>: <span class="str">'shell'</span>, <span class="fn">description</span>: <span class="str">'...'</span> });       <span class="cm">// MCP tool</span>
+<span class="fn">nope</span>.<span class="fn">scan</span>({ <span class="fn">code</span>: <span class="fn">pluginSource</span> });                      <span class="cm">// plugin code</span>
+<span class="kw">await</span> <span class="fn">nope</span>.<span class="fn">scan</span>({ <span class="fn">binary</span>: <span class="str">'/usr/bin/tirith'</span> });       <span class="cm">// binary checksum</span></pre>
+        </div>
+
+        <h3>sanitize(value, toolName?)</h3>
+        <p>Scrub secrets from any value. 17 built-in patterns: OpenAI, Anthropic, AWS, Google, GitHub, Groq, Stripe, Replicate, SendGrid, Slack, Twilio, PEM, JWT, Bearer.</p>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">clean</span> = <span class="fn">nope</span>.<span class="fn">sanitize</span>(<span class="fn">toolOutput</span>, <span class="str">'my-tool'</span>);
+<span class="cm">// sk-ant-secret-key → [REDACTED:Anthropic key]</span></pre>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- CONFIGURATION                            -->
+        <!-- ════════════════════════════════════════ -->
+
+        <h2 id="configuration">Configuration</h2>
+        <p>Start with a preset, then layer on what you need. Every feature is opt-in.</p>
+
+        <h3>Modes &amp; thresholds</h3>
+        <div class="code-block">
+          <pre><span class="kw">new</span> <span class="fn">NOPE</span>({ <span class="fn">mode</span>: <span class="str">'strict'</span> })   <span class="cm">// block violations (default)</span>
+<span class="kw">new</span> <span class="fn">NOPE</span>({ <span class="fn">mode</span>: <span class="str">'warn'</span> })     <span class="cm">// log but allow</span>
+<span class="kw">new</span> <span class="fn">NOPE</span>({ <span class="fn">mode</span>: <span class="str">'audit'</span> })    <span class="cm">// silent</span>
+<span class="kw">new</span> <span class="fn">NOPE</span>({ <span class="fn">threshold</span>: <span class="str">'critical'</span> }) <span class="cm">// only block critical</span></pre>
+        </div>
+
+        <h3>Identity &amp; auth</h3>
+        <p>Role-based thresholds, token verification, rate limiting, allow/deny lists, approval memory, and lockout.</p>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">nope</span> = <span class="fn">NOPE</span>.<span class="fn">preset</span>(<span class="str">'standard'</span>)
+  .<span class="fn">withRole</span>(<span class="str">'admin'</span>, <span class="str">'critical'</span>, <span class="str">'warn'</span>)
+  .<span class="fn">withRole</span>(<span class="str">'agent'</span>, <span class="str">'medium'</span>, <span class="str">'strict'</span>)
+  .<span class="fn">withRateLimit</span>(<span class="str">'1m'</span>, <span class="nr">60</span>, { <span class="fn">admin</span>: <span class="nr">200</span>, <span class="fn">agent</span>: <span class="nr">30</span> })
+  .<span class="fn">withLockout</span>(<span class="nr">5</span>)
+  .<span class="fn">withAuth</span>({
+    <span class="fn">verifyToken</span>: <span class="kw">async</span> (<span class="fn">t</span>) <span class="kw">=></span> <span class="fn">jwt</span>.<span class="fn">verify</span>(<span class="fn">t</span>, <span class="fn">SECRET</span>),
+    <span class="fn">allowlist</span>: [<span class="str">'user_abc'</span>],
+    <span class="fn">denylist</span>: [<span class="str">'user_bad'</span>],
+  });</pre>
+        </div>
+
+        <h3>SSRF protection</h3>
+        <p>DNS resolution, redirect chain validation, cloud metadata blocking (AWS, GCP, Azure, Alibaba), IPv6, custom blocklists.</p>
+        <div class="code-block">
+          <pre><span class="fn">nope</span>.<span class="fn">withSSRF</span>({
+  <span class="fn">enforced</span>: <span class="kw">true</span>,          <span class="cm">// cannot be disabled</span>
+  <span class="fn">customBlocklist</span>: [<span class="str">'evil.internal'</span>],
+  <span class="fn">allowlist</span>: [<span class="str">'safe-api.com'</span>],
+});
+
+<span class="kw">await</span> <span class="fn">nope</span>.<span class="fn">resolveAndCheck</span>(<span class="str">'https://suspicious.com'</span>);
+<span class="cm">// → { safe: false, reason: 'DNS rebinding: resolves to 10.0.0.1' }</span></pre>
+        </div>
+
+        <h3>Sandbox</h3>
+        <p>4 backends: process, Docker, SSH, WASM. Docker supports <code>--pids-limit</code>, <code>--read-only</code>, <code>--user</code>, seccomp, AppArmor, custom images, persistent containers.</p>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">sb</span> = <span class="fn">nope</span>.<span class="fn">sandbox</span>({ <span class="fn">backend</span>: <span class="str">'docker'</span>, <span class="fn">image</span>: <span class="str">'node:20-slim'</span>, <span class="fn">pidsLimit</span>: <span class="nr">256</span>, <span class="fn">readonlyRoot</span>: <span class="kw">true</span> });
+<span class="kw">await</span> <span class="fn">sb</span>.<span class="fn">exec</span>(<span class="str">'echo hello'</span>);
+<span class="cm">// → { stdout: 'hello\n', exitCode: 0, duration: 42 }</span></pre>
+        </div>
+
+        <h3>Scanners</h3>
+        <p>Built-in homograph detection, terminal injection scanning, and binary checksum verification. No external binary needed.</p>
+        <div class="code-block">
+          <pre><span class="fn">nope</span>.<span class="fn">withScanners</span>({ <span class="fn">homograph</span>: <span class="kw">true</span>, <span class="fn">terminalInjection</span>: <span class="kw">true</span> });</pre>
+        </div>
+
+        <h3>Telemetry &amp; dashboard</h3>
+        <div class="code-block">
+          <pre><span class="fn">nope</span>.<span class="fn">withTelemetry</span>({ <span class="fn">store</span>: <span class="str">'memory'</span>, <span class="fn">retention</span>: <span class="str">'7d'</span> });
+
+<span class="fn">nope</span>.<span class="fn">report</span>();     <span class="cm">// → { totalChecks, blocked, riskScore, topViolations, ... }</span>
+<span class="fn">nope</span>.<span class="fn">dashboard</span>();  <span class="cm">// → self-contained HTML dashboard</span></pre>
+        </div>
+
+        <h3>Smart LLM approval</h3>
+        <div class="code-block">
+          <pre><span class="kw">new</span> <span class="fn">NOPE</span>({
+  <span class="fn">llmApprove</span>: <span class="kw">async</span> (<span class="fn">cmd</span>, <span class="fn">violations</span>) <span class="kw">=></span> {
+    <span class="kw">const</span> <span class="fn">r</span> = <span class="kw">await</span> <span class="fn">llm</span>.<span class="fn">chat</span>(<span class="str">'Safe? '</span> + <span class="fn">cmd</span>);
+    <span class="kw">return</span> <span class="fn">r</span>.<span class="fn">includes</span>(<span class="str">'safe'</span>) ? <span class="str">'approve'</span> : <span class="str">'escalate'</span>;
+  },
+});</pre>
+        </div>
+        <div class="callout">LLM can only raise severity, never lower. If it throws, falls through to normal block logic (fail-safe). Verdicts: <code>approve</code>, <code>deny</code>, <code>escalate</code>.</div>
+
+        <h3>All config options</h3>
+        <table class="docs-table">
+          <thead><tr><th>Option</th><th>Default</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>mode</code></td><td><code>'strict'</code></td><td>strict blocks, warn logs, audit silent</td></tr>
+            <tr><td><code>threshold</code></td><td><code>'high'</code></td><td>Minimum severity to block</td></tr>
+            <tr><td><code>onBlock</code></td><td>--</td><td>Override callback (return true to allow)</td></tr>
+            <tr><td><code>sanitizeOutput</code></td><td><code>true</code></td><td>Scrub secrets from tool output</td></tr>
+            <tr><td><code>outputPatterns</code></td><td><code>[]</code></td><td>Additional secret patterns to scan for</td></tr>
+            <tr><td><code>onSanitize</code></td><td>--</td><td>Callback when secrets are redacted</td></tr>
+            <tr><td><code>llmApprove</code></td><td>--</td><td>Smart LLM approval (approve / deny / escalate)</td></tr>
+            <tr><td><code>externalScanner</code></td><td>--</td><td>External scanner hook (allow / warn / block)</td></tr>
+            <tr><td><code>trustedSources</code></td><td><code>[]</code></td><td>Glob patterns for trusted tools (relaxed threshold)</td></tr>
+            <tr><td><code>identity</code></td><td>--</td><td>Role-based security profiles</td></tr>
+            <tr><td><code>ssrf</code></td><td><code>{}</code></td><td>DNS resolution, redirects, enforced mode, blocklists</td></tr>
+            <tr><td><code>telemetry</code></td><td>--</td><td>Event tracking and reporting</td></tr>
+            <tr><td><code>auth</code></td><td>--</td><td>Token verification, rate limiting, allow/deny, lockout</td></tr>
+            <tr><td><code>scanners</code></td><td><code>{}</code></td><td>Homograph, terminal injection, binary verification</td></tr>
+          </tbody>
+        </table>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- BUILT-IN RULES                           -->
+        <!-- ════════════════════════════════════════ -->
+
+        <h2 id="builtin-rules">Built-in Rules</h2>
+        <p>60+ rules across 10 categories. All active by default. Use <code>nope.add()</code> and <code>nope.remove()</code> to customize.</p>
+
+        <table class="docs-table">
+          <thead><tr><th>Category</th><th>Rules</th><th>Covers</th></tr></thead>
+          <tbody>
+            <tr><td>filesystem</td><td>9</td><td>rm -rf, format, dd, shred, chmod 777, config deletion, system dirs</td></tr>
+            <tr><td>database</td><td>6</td><td>DROP, TRUNCATE, DELETE/UPDATE without WHERE, GRANT ALL</td></tr>
+            <tr><td>system</td><td>7</td><td>shutdown, kill, iptables flush, crontab, passwd, SELinux</td></tr>
+            <tr><td>credentials</td><td>15</td><td>API keys (OpenAI, AWS, Stripe, etc.), JWT, PEM, SSH keys, .env</td></tr>
+            <tr><td>injection</td><td>5</td><td>eval, exec, Function constructor, curl|bash, base64 decode</td></tr>
+            <tr><td>exfiltration</td><td>4</td><td>upload secrets, tar pipe, reverse shell, DNS tunneling</td></tr>
+            <tr><td>network</td><td>8</td><td>Private IPs, localhost, cloud metadata, IPv6 private, header injection</td></tr>
+            <tr><td>git</td><td>4</td><td>force push, hard reset, clean, delete remote branch</td></tr>
+            <tr><td>packages</td><td>2</td><td>global install, untrusted npx</td></tr>
+            <tr><td>containers</td><td>3</td><td>privileged, rm all, host root mount</td></tr>
+          </tbody>
+        </table>
+
+        <div class="code-block">
+          <pre><span class="cm">// Add a custom rule</span>
+<span class="fn">nope</span>.<span class="fn">add</span>(<span class="str">'no-prod-db'</span>, {
+  <span class="fn">description</span>: <span class="str">'Block production database writes'</span>,
+  <span class="fn">severity</span>: <span class="str">'critical'</span>,
+  <span class="fn">category</span>: <span class="str">'custom'</span>,
+  <span class="fn">match</span>: (<span class="fn">a</span>) <span class="kw">=></span> /prod/i.<span class="fn">test</span>(String(<span class="fn">a</span>.<span class="fn">params</span>?.<span class="fn">database</span> || <span class="str">''</span>)),
+});
+
+<span class="fn">nope</span>.<span class="fn">remove</span>(<span class="str">'pkg-global-install'</span>);  <span class="cm">// remove a built-in</span></pre>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- FULL EXAMPLE                              -->
+        <!-- ════════════════════════════════════════ -->
+
+        <h2 id="full-example">Full Example</h2>
+        <p>NOPE with AI and PLUG — register tools, add guardrails, chat safely.</p>
+
+        <div class="code-block">
+          <pre><span class="kw">import</span> { <span class="fn">AI</span> } <span class="kw">from</span> <span class="str">'@agnt-gg/ai'</span>;
+<span class="kw">import</span> { <span class="fn">PLUG</span> } <span class="kw">from</span> <span class="str">'@agnt-gg/plug'</span>;
+<span class="kw">import</span> { <span class="fn">NOPE</span> } <span class="kw">from</span> <span class="str">'@agnt-gg/nope'</span>;
+
+<span class="cm">// 1. Set up integrations</span>
+<span class="kw">const</span> <span class="fn">plug</span> = <span class="kw">new</span> <span class="fn">PLUG</span>();
+<span class="fn">plug</span>.<span class="fn">add</span>(<span class="str">'shell'</span>, {
+  <span class="fn">description</span>: <span class="str">'Execute shell commands'</span>,
+  <span class="fn">actions</span>: {
+    <span class="fn">exec</span>: {
+      <span class="fn">description</span>: <span class="str">'Run a command'</span>,
+      <span class="fn">input</span>: { <span class="fn">command</span>: <span class="str">'string'</span> },
+      <span class="fn">run</span>: <span class="kw">async</span> ({ <span class="fn">command</span> }) <span class="kw">=></span>
+        require(<span class="str">'child_process'</span>).<span class="fn">execSync</span>(<span class="fn">command</span>).<span class="fn">toString</span>(),
+    },
+  },
+});
+<span class="fn">plug</span>.<span class="fn">connect</span>(<span class="str">'shell'</span>, {});
+
+<span class="cm">// 2. Add guardrails</span>
+<span class="kw">const</span> <span class="fn">nope</span> = <span class="fn">NOPE</span>.<span class="fn">preset</span>(<span class="str">'standard'</span>)
+  .<span class="fn">withRole</span>(<span class="str">'agent'</span>, <span class="str">'medium'</span>, <span class="str">'strict'</span>)
+  .<span class="fn">withTrust</span>(<span class="str">'@agnt-gg/*'</span>);
+
+<span class="cm">// 3. Scan context before loading</span>
+<span class="kw">const</span> <span class="fn">ctx</span> = <span class="fn">nope</span>.<span class="fn">scan</span>(<span class="fn">fs</span>.<span class="fn">readFileSync</span>(<span class="str">'AGENTS.md'</span>, <span class="str">'utf-8'</span>));
+<span class="kw">if</span> (!<span class="fn">ctx</span>.<span class="fn">safe</span>) console.<span class="fn">warn</span>(<span class="str">'Injection detected!'</span>, <span class="fn">ctx</span>.<span class="fn">findings</span>);
+
+<span class="cm">// 4. Wrap tools with NOPE protection</span>
+<span class="kw">const</span> <span class="fn">safeTools</span> = <span class="fn">nope</span>.<span class="fn">wrap</span>(<span class="fn">plug</span>.<span class="fn">tools</span>);
+
+<span class="cm">// 5. Wire into AI</span>
+<span class="kw">const</span> <span class="fn">ai</span> = <span class="kw">new</span> <span class="fn">AI</span>();
+<span class="kw">for</span> (<span class="kw">const</span> <span class="fn">t</span> <span class="kw">of</span> <span class="fn">safeTools</span>) {
+  <span class="fn">ai</span>.<span class="fn">tool</span>(<span class="fn">t</span>.<span class="fn">name</span>, <span class="fn">t</span>.<span class="fn">description</span>, <span class="fn">t</span>.<span class="fn">input</span>, <span class="fn">t</span>.<span class="fn">run</span>);
+}
+
+<span class="cm">// 6. Chat — safe inputs, safe outputs</span>
+<span class="kw">await</span> <span class="fn">ai</span>.<span class="fn">chat</span>(<span class="str">'List files in current directory'</span>);  <span class="cm">// works</span>
+<span class="kw">await</span> <span class="fn">ai</span>.<span class="fn">chat</span>(<span class="str">'Delete everything on the server'</span>); <span class="cm">// blocked by NOPE</span></pre>
+        </div>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- API REFERENCE                             -->
+        <!-- ════════════════════════════════════════ -->
+
+        <h2 id="api-reference">API Reference</h2>
+        <p>Every public method and type on the <code>NOPE</code> class.</p>
+
+        <h3>Static</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>NOPE.preset(name, overrides?)</code></td><td><code>NOPE</code></td><td>Create instance from named preset (paranoid, standard, minimal, audit)</td></tr>
+            <tr><td><code>NOPE.PRESETS</code></td><td><code>Record&lt;string, NopeConfig&gt;</code></td><td>Read-only map of preset configurations</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Constructor &amp; fluent builder</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>new NOPE(config?)</code></td><td><code>NOPE</code></td><td>Create instance with full config object</td></tr>
+            <tr><td><code>.withRole(name, threshold, mode)</code></td><td><code>this</code></td><td>Add identity role</td></tr>
+            <tr><td><code>.withRateLimit(window, max, byRole?)</code></td><td><code>this</code></td><td>Configure rate limiting</td></tr>
+            <tr><td><code>.withLockout(after, duration?)</code></td><td><code>this</code></td><td>Configure auto-lockout</td></tr>
+            <tr><td><code>.withSSRF(config)</code></td><td><code>this</code></td><td>Configure SSRF protection</td></tr>
+            <tr><td><code>.withAuth(config)</code></td><td><code>this</code></td><td>Configure authentication</td></tr>
+            <tr><td><code>.withScanners(config)</code></td><td><code>this</code></td><td>Configure built-in scanners</td></tr>
+            <tr><td><code>.withTelemetry(config)</code></td><td><code>this</code></td><td>Configure telemetry</td></tr>
+            <tr><td><code>.withTrust(...patterns)</code></td><td><code>this</code></td><td>Add trusted source globs</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Core methods</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>check(action, context?)</code></td><td><code>CheckResult</code></td><td>Test action against all rules. Identity/auth-aware.</td></tr>
+            <tr><td><code>wrap(tools)</code></td><td><code>Tool[]</code></td><td>Wrap tools with full protection pipeline</td></tr>
+            <tr><td><code>scan(input)</code></td><td><code>*ScanResult</code></td><td>Unified scan: string, {code}, {name,description}, {binary}</td></tr>
+            <tr><td><code>sanitize(value, toolName?)</code></td><td><code>T</code></td><td>Scrub secrets from any value (17 built-in patterns)</td></tr>
+            <tr><td><code>guard(fn)</code></td><td><code>(params) => Promise</code></td><td>Wrap a single function with guardrails</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Scanning (explicit)</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>scanContext(text)</code></td><td><code>ContextScanResult</code></td><td>Detect prompt injection: Unicode, hijacking, exfiltration, encoded payloads</td></tr>
+            <tr><td><code>wrapContext(loader)</code></td><td><code>() => Promise&lt;string&gt;</code></td><td>Intercept context loader, prepend warnings if injection found</td></tr>
+            <tr><td><code>scanPlugin(code)</code></td><td><code>PluginScanResult</code></td><td>Static analysis of plugin/skill source code</td></tr>
+            <tr><td><code>scanMCPTool(tool)</code></td><td><code>PluginScanResult</code></td><td>Scan MCP tool definition (description, defaults, code)</td></tr>
+            <tr><td><code>verifyBinary(path)</code></td><td><code>Promise&lt;{verified, reason?}&gt;</code></td><td>SHA-256 checksum verification</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Network &amp; sandbox</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>resolveAndCheck(url)</code></td><td><code>Promise&lt;SSRFCheckResult&gt;</code></td><td>DNS resolve + private IP check + redirect chain validation</td></tr>
+            <tr><td><code>sandbox(config?)</code></td><td><code>Sandbox</code></td><td>Create sandbox (process, docker, ssh, wasm)</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Auth</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>verifyToken(token)</code></td><td><code>Promise&lt;SecurityContext&gt;</code></td><td>Verify token via configured verifyToken function</td></tr>
+            <tr><td><code>checkWithToken(action, token)</code></td><td><code>Promise&lt;CheckResult&gt;</code></td><td>Verify token + check action in one call</td></tr>
+            <tr><td><code>recordApproval(userId, ruleId, choice)</code></td><td><code>void</code></td><td>Store approval choice (once, session, always, deny)</td></tr>
+            <tr><td><code>getApproval(userId, ruleId)</code></td><td><code>ApprovalChoice?</code></td><td>Retrieve stored approval</td></tr>
+            <tr><td><code>clearApprovals(userId)</code></td><td><code>void</code></td><td>Clear all approvals for a user</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Telemetry</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>report()</code></td><td><code>SecurityReport</code></td><td>Aggregated metrics: checks, blocks, risk score, top violations, per-tool</td></tr>
+            <tr><td><code>dashboard()</code></td><td><code>string</code></td><td>Self-contained HTML security dashboard</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Rules</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>add(id, rule)</code></td><td><code>this</code></td><td>Add a custom rule</td></tr>
+            <tr><td><code>remove(id)</code></td><td><code>this</code></td><td>Remove a rule (including built-in)</td></tr>
+            <tr><td><code>rules</code> (getter)</td><td><code>RuleInfo[]</code></td><td>List all active rules</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Testing</h3>
+        <table class="docs-table">
+          <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>redTeam(config?)</code></td><td><code>Promise&lt;RedTeamResult&gt;</code></td><td>50+ attack vectors + fuzzing, returns pass/fail + coverage</td></tr>
+          </tbody>
+        </table>
+
+        <h3>Key types</h3>
+        <table class="docs-table">
+          <thead><tr><th>Type</th><th>Shape</th></tr></thead>
+          <tbody>
+            <tr><td><code>Action</code></td><td><code>{ tool?, params?, command?, code? }</code></td></tr>
+            <tr><td><code>CheckResult</code></td><td><code>{ allowed: boolean, violations: Violation[] }</code></td></tr>
+            <tr><td><code>Violation</code></td><td><code>{ rule, description, severity, category }</code></td></tr>
+            <tr><td><code>SecurityContext</code></td><td><code>{ role?, sessionId?, token?, userId? }</code></td></tr>
+            <tr><td><code>ContextScanResult</code></td><td><code>{ safe: boolean, findings: ContextFinding[] }</code></td></tr>
+            <tr><td><code>PluginScanResult</code></td><td><code>{ safe: boolean, risk: Severity, findings: PluginFinding[] }</code></td></tr>
+            <tr><td><code>SSRFCheckResult</code></td><td><code>{ safe, blocked, reason?, resolvedIP?, redirectChain? }</code></td></tr>
+            <tr><td><code>SandboxResult</code></td><td><code>{ stdout, stderr, exitCode, duration }</code></td></tr>
+            <tr><td><code>SecurityReport</code></td><td><code>{ totalChecks, blocked, warned, allowed, riskScore, topViolations, perTool, timeline }</code></td></tr>
+            <tr><td><code>RedTeamResult</code></td><td><code>{ passed, failed, total, vulnerabilities, coverage }</code></td></tr>
+            <tr><td><code>Severity</code></td><td><code>'critical' | 'high' | 'medium' | 'low'</code></td></tr>
+            <tr><td><code>Mode</code></td><td><code>'strict' | 'warn' | 'audit'</code></td></tr>
+            <tr><td><code>PresetName</code></td><td><code>'paranoid' | 'standard' | 'minimal' | 'audit'</code></td></tr>
+          </tbody>
+        </table>
+
+        <!-- ════════════════════════════════════════ -->
+        <!-- ADVANCED                                 -->
+        <!-- ════════════════════════════════════════ -->
+
+        <h2 id="advanced">Advanced</h2>
+
+        <h3>Guard a single function</h3>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">safeExec</span> = <span class="fn">nope</span>.<span class="fn">guard</span>(<span class="kw">async</span> ({ <span class="fn">command</span> }) <span class="kw">=></span> <span class="fn">execSync</span>(<span class="fn">command</span>).<span class="fn">toString</span>());
+<span class="kw">await</span> <span class="fn">safeExec</span>({ <span class="fn">command</span>: <span class="str">'ls'</span> });     <span class="cm">// works</span>
+<span class="kw">await</span> <span class="fn">safeExec</span>({ <span class="fn">command</span>: <span class="str">'shutdown -h now'</span> }); <span class="cm">// throws</span></pre>
+        </div>
+
+        <h3>External scanner</h3>
+        <p>Delegate to an external binary. Runs before built-in rules. Verdict is authoritative. Fails open if unavailable.</p>
+        <div class="code-block">
+          <pre><span class="kw">new</span> <span class="fn">NOPE</span>({
+  <span class="fn">externalScanner</span>: <span class="kw">async</span> (<span class="fn">action</span>) <span class="kw">=></span> ({
+    <span class="fn">action</span>: (<span class="kw">await</span> <span class="fn">runBinary</span>(<span class="fn">action</span>)).<span class="fn">exitCode</span> === <span class="nr">0</span> ? <span class="str">'allow'</span> : <span class="str">'block'</span>,
+  }),
+});</pre>
+        </div>
+
+        <h3>Red team testing</h3>
+        <p>50+ built-in attack vectors with fuzzing. Test your guardrails before attackers do.</p>
+        <div class="code-block">
+          <pre><span class="kw">const</span> <span class="fn">r</span> = <span class="kw">await</span> <span class="fn">nope</span>.<span class="fn">redTeam</span>({ <span class="fn">attacks</span>: <span class="str">'all'</span>, <span class="fn">iterations</span>: <span class="nr">200</span> });
+<span class="cm">// → { passed: 187, failed: 13, coverage: { command: { tested: 48, caught: 45 }, ... } }</span></pre>
+        </div>
+
+        <h3>Consent callback</h3>
+        <div class="code-block">
+          <pre><span class="kw">new</span> <span class="fn">NOPE</span>({
+  <span class="fn">onBlock</span>: <span class="kw">async</span> (<span class="fn">violations</span>, <span class="fn">action</span>) <span class="kw">=></span> {
+    <span class="kw">return</span> <span class="kw">await</span> <span class="fn">prompt</span>(<span class="str">'Allow? (y/n)'</span>) === <span class="str">'y'</span>;
+  },
+});</pre>
+        </div>
+
+        <h3>Execution pipeline</h3>
+        <div class="callout">
+          1. External scanner → 2. Built-in rules → 3. Identity context → 4. Trust level → 5. LLM approval → 6. onBlock callback → 7. Execute tool → 8. Sanitize output
+        </div>
+
+      </main>
+    </div>
+
+    <script>
+      const links = document.querySelectorAll('.sidebar a');
+      const sections = Array.from(links).map((a) => document.getElementById(a.getAttribute('href').slice(1)));
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              links.forEach((a) => a.classList.remove('active'));
+              const link = document.querySelector(`.sidebar a[href="#${entry.target.id}"]`);
+              if (link) link.classList.add('active');
+            }
+          });
+        },
+        { rootMargin: '-100px 0px -60% 0px', threshold: 0 },
+      );
+      sections.forEach((s) => {
+        if (s) observer.observe(s);
+      });
+    </script>
+  </body>
+</html>

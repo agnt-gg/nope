@@ -1,0 +1,49 @@
+{
+  "name": "@agnt-gg/nope",
+  "version": "0.1.0",
+  "description": "NOPE — Neutralize Operations Prior to Execution. Security guardrails for AI agents: 63 dangerous-operation rules, secret redaction with binary-safe sanitization, prompt-injection scanning, DNS-aware SSRF protection, plugin/MCP scanning, sandboxing, identity-aware policies, telemetry, and red-team self-testing. Zero dependencies.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node test/run-tests.mjs",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "ai-agents",
+    "security",
+    "guardrails",
+    "llm",
+    "prompt-injection",
+    "ssrf",
+    "sandbox",
+    "secret-redaction",
+    "agent-security",
+    "agnt"
+  ],
+  "author": "AGNT (https://agnt.gg)",
+  "license": "MIT",
+  "homepage": "https://agnt.gg",
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "@types/node": "^22.5.0"
+  }
+}
