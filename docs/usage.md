@@ -148,9 +148,9 @@ await nope.resolveAndCheck('https://suspicious.com');
 // → { safe: false, reason: 'DNS rebinding: resolves to 10.0.0.1' }
 ```
 
-### Sandbox
+### Execution backends
 
-4 backends: process, Docker, SSH, WASM. Docker supports custom images, `--pids-limit`, `--read-only`, `--user`, seccomp, AppArmor, volumes, persistent containers.
+Backends are explicit and fail closed. Docker is the isolation boundary. SSH is remote transport, not a sandbox. `host-process` is trusted-host execution and requires `acknowledgeHostAccess: true`; it accepts only `executable` plus `args`. Arbitrary shell commands are not WASI modules, so the WASM shell backend returns `BACKEND_UNAVAILABLE` and never falls back to the host.
 
 ```typescript
 const sb = nope.sandbox({
@@ -158,6 +158,14 @@ const sb = nope.sandbox({
   pidsLimit: 256, readonlyRoot: true, user: 'nobody',
 });
 await sb.exec('echo hello');
+
+const host = nope.sandbox({
+  backend: 'host-process',
+  acknowledgeHostAccess: true,
+  executable: process.execPath,
+  args: ['trusted-script.mjs'],
+});
+await host.exec();
 ```
 
 ### Scanners

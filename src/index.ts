@@ -7,7 +7,8 @@
 // ============================================================
 
 // Facade
-export { NOPE } from './NOPE.js';
+export { NOPE, NopeSandboxError } from './NOPE.js';
+export type { NopeSandboxErrorCode } from './NOPE.js';
 
 // Built-in rules
 export { BUILTIN_RULES } from './rules.js';
@@ -40,6 +41,7 @@ export type {
   SSRFCheckResult,
   // Sandbox
   SandboxConfig,
+  SandboxErrorCode,
   SandboxResult,
   Sandbox,
   // Identity-aware security

@@ -7,6 +7,72 @@
 //  and adversarial red-team testing.
 // ============================================================
 import { BUILTIN_RULES } from './rules.js';
+export class NopeSandboxError extends Error {
+    code;
+    constructor(code, message) {
+        super(message);
+        this.name = 'NopeSandboxError';
+        this.code = code;
+    }
+}
+async function runExecutable(executable, args, options) {
+    const start = Date.now();
+    try {
+        const { spawn } = await import('node:child_process');
+        return await new Promise((resolve) => {
+            let timer;
+            const child = spawn(executable, args, {
+                cwd: options.cwd,
+                env: options.env,
+                shell: false,
+                windowsHide: true,
+                stdio: ['ignore', 'pipe', 'pipe'],
+            });
+            let stdout = '';
+            let stderr = '';
+            let settled = false;
+            const finish = (result) => {
+                if (settled)
+                    return;
+                settled = true;
+                if (timer)
+                    clearTimeout(timer);
+                resolve(result);
+            };
+            child.stdout?.on('data', (chunk) => { stdout += chunk.toString(); });
+            child.stderr?.on('data', (chunk) => { stderr += chunk.toString(); });
+            child.once('error', (error) => finish({
+                stdout,
+                stderr: stderr || error.message,
+                exitCode: error.code === 'ENOENT' ? 127 : 1,
+                duration: Date.now() - start,
+            }));
+            child.once('close', (code) => finish({
+                stdout,
+                stderr,
+                exitCode: code ?? 1,
+                duration: Date.now() - start,
+            }));
+            timer = setTimeout(() => {
+                child.kill();
+                finish({
+                    stdout,
+                    stderr: stderr || `[NOPE] Execution timed out after ${options.timeout}ms.`,
+                    exitCode: 124,
+                    duration: Date.now() - start,
+                });
+            }, options.timeout);
+        });
+    }
+    catch (error) {
+        return {
+            stdout: '',
+            stderr: error?.message ?? String(error),
+            exitCode: 1,
+            duration: Date.now() - start,
+        };
+    }
+}
 // --------------- Severity ordering ---------------
 const SEVERITY_LEVEL = {
     low: 0,
@@ -1043,49 +1109,62 @@ export class NOPE {
         }
         return { safe: true, blocked: false, resolvedIP };
     }
-    // ── 3. Lightweight Sandbox ──────────────────────────────────
+    // ── 3. Execution Backends ──────────────────────────────────
     /**
-     * Create a sandboxed execution environment.
-     * Returns a Sandbox object with exec() for running commands in isolation.
+     * Create an execution backend. No backend is selected implicitly: callers
+     * must choose an isolation boundary or explicitly acknowledge host access.
      */
     sandbox(config) {
-        const backend = config?.backend ?? 'process';
-        const timeout = config?.timeout ?? 30000;
-        const network = config?.network ?? false;
-        if (backend === 'docker')
-            return this._dockerSandbox(config ?? {});
-        if (backend === 'ssh')
-            return this._sshSandbox(config ?? {});
-        if (backend === 'wasm')
-            return this._wasmSandbox(config ?? {});
-        // Default: process-based sandbox with resource limits
+        if (!config?.backend) {
+            throw new NopeSandboxError('BACKEND_REQUIRED', 'A sandbox backend is required. Use Docker for isolation, or host-process with acknowledgeHostAccess: true for trusted commands.');
+        }
+        if (config.backend === 'process') {
+            throw new NopeSandboxError('UNSAFE_HOST_EXECUTION', 'The legacy "process" backend is no longer supported. Use "host-process" with acknowledgeHostAccess: true.');
+        }
+        if (config.backend === 'docker')
+            return this._dockerSandbox(config);
+        if (config.backend === 'ssh')
+            return this._sshSandbox(config);
+        if (config.backend === 'wasm')
+            return this._wasmSandbox();
+        if (config.backend === 'host-process')
+            return this._hostProcessExecutor(config);
+        throw new NopeSandboxError('BACKEND_UNAVAILABLE', 'Unsupported execution backend.');
+    }
+    _hostProcessExecutor(config) {
+        if (config.acknowledgeHostAccess !== true) {
+            throw new NopeSandboxError('UNSAFE_HOST_EXECUTION', 'host-process runs with the current OS user and requires acknowledgeHostAccess: true.');
+        }
+        if (!config.executable) {
+            throw new NopeSandboxError('INVALID_CONFIGURATION', 'host-process requires an executable.');
+        }
+        const executable = config.executable;
+        const args = config.args ?? [];
+        const timeout = config.timeout ?? 30000;
+        const cwd = config.cwd;
         return {
             exec: async (command) => {
-                const start = Date.now();
-                const check = this.check({ command });
+                if (command) {
+                    return {
+                        stdout: '',
+                        stderr: '[NOPE] host-process does not accept command strings. Configure executable and args instead.',
+                        exitCode: 2,
+                        duration: 0,
+                    };
+                }
+                const check = this.check({ command: [executable, ...args].join(' ') });
                 if (!check.allowed) {
                     const worst = check.violations[0];
-                    return { stdout: '', stderr: `[NOPE] Sandbox blocked: ${worst.description} (${worst.rule})`, exitCode: 1, duration: Date.now() - start };
+                    return { stdout: '', stderr: '[NOPE] Host execution blocked: ' + worst.description + ' (' + worst.rule + ')', exitCode: 1, duration: 0 };
                 }
-                try {
-                    const { execSync } = await import('child_process');
-                    const stdout = execSync(command, {
-                        timeout,
-                        maxBuffer: 10 * 1024 * 1024,
-                        stdio: ['pipe', 'pipe', 'pipe'],
-                        env: network ? process.env : { ...process.env, http_proxy: '', https_proxy: '', HTTP_PROXY: '', HTTPS_PROXY: '' },
-                    }).toString();
-                    return this.sanitize({ stdout, stderr: '', exitCode: 0, duration: Date.now() - start }, 'sandbox');
-                }
-                catch (e) {
-                    return { stdout: e.stdout?.toString() ?? '', stderr: e.stderr?.toString() ?? e.message, exitCode: e.status ?? 1, duration: Date.now() - start };
-                }
+                const result = await runExecutable(executable, args, { timeout, cwd, env: process.env });
+                return result.exitCode === 0 ? this.sanitize(result, 'host-process') : result;
             },
             destroy: () => { },
         };
     }
     _dockerSandbox(config) {
-        const image = config.image ?? 'alpine:latest';
+        const image = config.image ?? 'alpine:3.20';
         const cpu = config.cpu ?? '0.5';
         const memory = config.memory ?? '256m';
         const timeout = config.timeout ?? 30000;
@@ -1094,151 +1173,94 @@ export class NOPE {
         return {
             exec: async (command) => {
                 const start = Date.now();
+                if (!command)
+                    return { stdout: '', stderr: '[NOPE] Docker execution requires a command.', exitCode: 2, duration: 0 };
                 const check = this.check({ command });
                 if (!check.allowed) {
                     const worst = check.violations[0];
-                    return { stdout: '', stderr: `[NOPE] Sandbox blocked: ${worst.description}`, exitCode: 1, duration: Date.now() - start };
+                    return { stdout: '', stderr: '[NOPE] Sandbox blocked: ' + worst.description, exitCode: 1, duration: Date.now() - start };
                 }
-                // If persistent container exists, exec into it
                 if (persistent) {
-                    try {
-                        const { execSync } = await import('child_process');
-                        const stdout = execSync(`docker exec ${persistent} sh -c ${JSON.stringify(command)}`, {
-                            timeout, maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'],
-                        }).toString();
-                        return this.sanitize({ stdout, stderr: '', exitCode: 0, duration: Date.now() - start }, 'docker-sandbox');
-                    }
-                    catch (e) {
-                        // Container may not exist yet — fall through to create it
-                        if (!e.stderr?.includes('No such container')) {
-                            return { stdout: e.stdout?.toString() ?? '', stderr: e.stderr?.toString() ?? e.message, exitCode: e.status ?? 1, duration: Date.now() - start };
-                        }
-                    }
+                    const existing = await runExecutable('docker', ['exec', persistent, 'sh', '-c', command], { timeout });
+                    if (existing.exitCode === 0)
+                        return this.sanitize(existing, 'docker-sandbox');
+                    if (!existing.stderr.includes('No such container'))
+                        return existing;
                 }
-                try {
-                    const { execSync } = await import('child_process');
-                    const args = ['docker', 'run'];
-                    // Ephemeral vs persistent
-                    if (persistent) {
-                        args.push('--name', persistent, '-d');
-                    }
-                    else {
-                        args.push('--rm');
-                    }
-                    // Security hardening
-                    const caps = config.dropCapabilities ?? ['ALL'];
-                    for (const cap of caps)
-                        args.push('--cap-drop', cap);
-                    args.push('--security-opt', 'no-new-privileges');
-                    // Resource limits
-                    args.push('--cpus', cpu, '--memory', memory);
-                    if (config.pidsLimit)
-                        args.push('--pids-limit', String(config.pidsLimit));
-                    // Filesystem
-                    if (config.readonlyRoot)
-                        args.push('--read-only');
-                    if (config.tmpfs)
-                        for (const t of config.tmpfs)
-                            args.push('--tmpfs', t);
-                    if (config.volumes)
-                        for (const v of config.volumes)
-                            args.push('-v', v);
-                    // User
-                    if (config.user)
-                        args.push('--user', config.user);
-                    // Security profiles
-                    if (config.seccomp)
-                        args.push('--security-opt', `seccomp=${config.seccomp}`);
-                    if (config.apparmorProfile)
-                        args.push('--security-opt', `apparmor=${config.apparmorProfile}`);
-                    // Network
-                    if (!network)
-                        args.push('--network=none');
-                    // Image and command
-                    args.push(image, 'sh', '-c', command);
-                    const dockerCmd = args.map(a => a.includes(' ') ? JSON.stringify(a) : a).join(' ');
-                    const stdout = execSync(dockerCmd, { timeout, maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] }).toString();
-                    return this.sanitize({ stdout, stderr: '', exitCode: 0, duration: Date.now() - start }, 'docker-sandbox');
-                }
-                catch (e) {
-                    return { stdout: e.stdout?.toString() ?? '', stderr: e.stderr?.toString() ?? e.message, exitCode: e.status ?? 1, duration: Date.now() - start };
-                }
+                const args = ['run'];
+                if (persistent)
+                    args.push('--name', persistent, '-d');
+                else
+                    args.push('--rm');
+                const caps = config.dropCapabilities ?? ['ALL'];
+                for (const cap of caps)
+                    args.push('--cap-drop', cap);
+                args.push('--security-opt', 'no-new-privileges');
+                args.push('--cpus', cpu, '--memory', memory);
+                if (config.pidsLimit)
+                    args.push('--pids-limit', String(config.pidsLimit));
+                if (config.readonlyRoot)
+                    args.push('--read-only');
+                if (config.tmpfs)
+                    for (const mount of config.tmpfs)
+                        args.push('--tmpfs', mount);
+                if (config.volumes)
+                    for (const volume of config.volumes)
+                        args.push('-v', volume);
+                if (config.user)
+                    args.push('--user', config.user);
+                if (config.seccomp)
+                    args.push('--security-opt', 'seccomp=' + config.seccomp);
+                if (config.apparmorProfile)
+                    args.push('--security-opt', 'apparmor=' + config.apparmorProfile);
+                if (!network)
+                    args.push('--network=none');
+                args.push(image, 'sh', '-c', command);
+                const result = await runExecutable('docker', args, { timeout });
+                return result.exitCode === 0 ? this.sanitize(result, 'docker-sandbox') : result;
             },
             destroy: () => {
-                if (persistent) {
-                    try {
-                        const cp = require('child_process');
-                        cp.execSync(`docker rm -f ${persistent}`, { stdio: 'ignore' });
-                    }
-                    catch { /* best-effort */ }
-                }
+                // Cleanup is explicit but asynchronous command completion is not part of
+                // the legacy Sandbox.destroy() contract. Invocation remains shell-free.
+                if (!persistent)
+                    return;
+                void runExecutable('docker', ['rm', '-f', persistent], { timeout: 10000 });
             },
         };
     }
     _sshSandbox(config) {
         const host = config.sshHost ?? '';
-        const keyArg = config.sshKey ? `-i ${config.sshKey}` : '';
         const timeout = config.timeout ?? 30000;
+        if (!host)
+            throw new NopeSandboxError('INVALID_CONFIGURATION', 'SSH backend requires sshHost.');
         return {
             exec: async (command) => {
                 const start = Date.now();
+                if (!command)
+                    return { stdout: '', stderr: '[NOPE] SSH execution requires a command.', exitCode: 2, duration: 0 };
                 const check = this.check({ command });
                 if (!check.allowed) {
                     const worst = check.violations[0];
-                    return { stdout: '', stderr: `[NOPE] Sandbox blocked: ${worst.description}`, exitCode: 1, duration: Date.now() - start };
+                    return { stdout: '', stderr: '[NOPE] Remote execution blocked: ' + worst.description, exitCode: 1, duration: Date.now() - start };
                 }
-                try {
-                    const { execSync } = await import('child_process');
-                    const sshCmd = `ssh ${keyArg} -o StrictHostKeyChecking=accept-new -o ConnectTimeout=10 ${host} ${JSON.stringify(command)}`;
-                    const stdout = execSync(sshCmd, { timeout, maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'] }).toString();
-                    return this.sanitize({ stdout, stderr: '', exitCode: 0, duration: Date.now() - start }, 'ssh-sandbox');
-                }
-                catch (e) {
-                    return { stdout: e.stdout?.toString() ?? '', stderr: e.stderr?.toString() ?? e.message, exitCode: e.status ?? 1, duration: Date.now() - start };
-                }
+                const args = [];
+                if (config.sshKey)
+                    args.push('-i', config.sshKey);
+                args.push('-o', 'StrictHostKeyChecking=accept-new', '-o', 'ConnectTimeout=10', host, command);
+                const result = await runExecutable('ssh', args, { timeout });
+                return result.exitCode === 0 ? this.sanitize(result, 'ssh-remote-execution') : result;
             },
             destroy: () => { },
         };
     }
-    _wasmSandbox(config) {
-        const timeout = config.timeout ?? 30000;
+    _wasmSandbox() {
         return {
-            exec: async (command) => {
-                const start = Date.now();
-                const check = this.check({ command });
-                if (!check.allowed) {
-                    const worst = check.violations[0];
-                    return { stdout: '', stderr: `[NOPE] Sandbox blocked: ${worst.description}`, exitCode: 1, duration: Date.now() - start };
-                }
-                // WASM sandbox via wasmtime/wasmer CLI (if available)
-                try {
-                    const { execSync } = await import('child_process');
-                    // Try wasmtime first, then wasmer
-                    const runtimes = ['wasmtime', 'wasmer'];
-                    for (const rt of runtimes) {
-                        try {
-                            const stdout = execSync(`echo ${JSON.stringify(command)} | ${rt} run --dir=. -- /bin/sh`, {
-                                timeout, maxBuffer: 10 * 1024 * 1024, stdio: ['pipe', 'pipe', 'pipe'],
-                            }).toString();
-                            return this.sanitize({ stdout, stderr: '', exitCode: 0, duration: Date.now() - start }, 'wasm-sandbox');
-                        }
-                        catch {
-                            continue;
-                        }
-                    }
-                    // Fallback: run in process with strict constraints
-                    const stdout = execSync(command, {
-                        timeout,
-                        maxBuffer: 1 * 1024 * 1024,
-                        stdio: ['pipe', 'pipe', 'pipe'],
-                        env: {}, // Empty env for isolation
-                    }).toString();
-                    return this.sanitize({ stdout, stderr: '', exitCode: 0, duration: Date.now() - start }, 'wasm-sandbox');
-                }
-                catch (e) {
-                    return { stdout: e.stdout?.toString() ?? '', stderr: e.stderr?.toString() ?? e.message, exitCode: e.status ?? 1, duration: Date.now() - start };
-                }
-            },
+            exec: async () => ({
+                stdout: '',
+                stderr: '[NOPE] BACKEND_UNAVAILABLE: The WASM backend does not execute arbitrary shell commands. A dedicated WASI module API is required.',
+                exitCode: 127,
+                duration: 0,
+            }),
             destroy: () => { },
         };
     }

@@ -1,4 +1,9 @@
 import type { Rule, RuleInfo, Action, CheckResult, Tool, NopeConfig, Mode, Severity, ContextScanResult, SSRFCheckResult, SSRFConfig, SandboxConfig, Sandbox, SecurityContext, PluginScanResult, MCPToolDef, TelemetryConfig, SecurityReport, RedTeamConfig, RedTeamResult, AuthConfig, ApprovalChoice, ScannersConfig } from './types.js';
+export type NopeSandboxErrorCode = 'BACKEND_REQUIRED' | 'BACKEND_UNAVAILABLE' | 'UNSAFE_HOST_EXECUTION' | 'INVALID_CONFIGURATION';
+export declare class NopeSandboxError extends Error {
+    readonly code: NopeSandboxErrorCode;
+    constructor(code: NopeSandboxErrorCode, message: string);
+}
 export declare class NOPE {
     private _rules;
     private _mode;
@@ -124,10 +129,11 @@ export declare class NOPE {
      */
     resolveAndCheck(url: string): Promise<SSRFCheckResult>;
     /**
-     * Create a sandboxed execution environment.
-     * Returns a Sandbox object with exec() for running commands in isolation.
+     * Create an execution backend. No backend is selected implicitly: callers
+     * must choose an isolation boundary or explicitly acknowledge host access.
      */
     sandbox(config?: SandboxConfig): Sandbox;
+    private _hostProcessExecutor;
     private _dockerSandbox;
     private _sshSandbox;
     private _wasmSandbox;
