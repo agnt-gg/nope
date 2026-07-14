@@ -1,6 +1,6 @@
 {
   "name": "@agnt-gg/nope",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "NOPE — Neutralize Operations Prior to Execution. Security guardrails for AI agents with fail-closed execution backends, dangerous-operation rules, secret redaction, prompt-injection scanning, SSRF protection, telemetry, and red-team testing.",
   "type": "module",
   "main": "./dist/index.js",
