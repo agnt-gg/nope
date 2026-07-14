@@ -6,6 +6,6 @@
 //   const safe = nope.wrap(tools);
 // ============================================================
 // Facade
-export { NOPE } from './NOPE.js';
+export { NOPE, NopeSandboxError } from './NOPE.js';
 // Built-in rules
 export { BUILTIN_RULES } from './rules.js';

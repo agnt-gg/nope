@@ -500,8 +500,8 @@
 <span class="cm">// → { safe: false, reason: 'DNS rebinding: resolves to 10.0.0.1' }</span></pre>
         </div>
 
-        <h3>Sandbox</h3>
-        <p>4 backends: process, Docker, SSH, WASM. Docker supports <code>--pids-limit</code>, <code>--read-only</code>, <code>--user</code>, seccomp, AppArmor, custom images, persistent containers.</p>
+        <h3>Execution backends</h3>
+        <p>Backends are explicit and fail closed. Docker is the isolation boundary. SSH is remote transport, not a sandbox. <code>host-process</code> requires <code>acknowledgeHostAccess: true</code> and uses an executable plus argument array. WASM shell execution is unavailable and never falls back to the host.</p>
         <div class="code-block">
           <pre><span class="kw">const</span> <span class="fn">sb</span> = <span class="fn">nope</span>.<span class="fn">sandbox</span>({ <span class="fn">backend</span>: <span class="str">'docker'</span>, <span class="fn">image</span>: <span class="str">'node:20-slim'</span>, <span class="fn">pidsLimit</span>: <span class="nr">256</span>, <span class="fn">readonlyRoot</span>: <span class="kw">true</span> });
 <span class="kw">await</span> <span class="fn">sb</span>.<span class="fn">exec</span>(<span class="str">'echo hello'</span>);
@@ -700,7 +700,7 @@
           <thead><tr><th>Method</th><th>Returns</th><th>Description</th></tr></thead>
           <tbody>
             <tr><td><code>resolveAndCheck(url)</code></td><td><code>Promise&lt;SSRFCheckResult&gt;</code></td><td>DNS resolve + private IP check + redirect chain validation</td></tr>
-            <tr><td><code>sandbox(config?)</code></td><td><code>Sandbox</code></td><td>Create sandbox (process, docker, ssh, wasm)</td></tr>
+            <tr><td><code>sandbox(config)</code></td><td><code>Sandbox</code></td><td>Create an explicit Docker, SSH, or acknowledged host-process backend; WASM shell commands fail closed</td></tr>
           </tbody>
         </table>
 

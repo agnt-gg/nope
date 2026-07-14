@@ -216,9 +216,18 @@ export interface SSRFCheckResult {
     /** Chain of redirect URLs followed */
     redirectChain?: string[];
 }
+export type SandboxErrorCode = 'BACKEND_REQUIRED' | 'BACKEND_UNAVAILABLE' | 'UNSAFE_HOST_EXECUTION' | 'INVALID_CONFIGURATION';
 export interface SandboxConfig {
-    /** Sandbox backend. Default: 'process' */
-    backend?: 'process' | 'docker' | 'wasm' | 'ssh';
+    /** Execution backend. No default. 'process' is retained only for a runtime migration error. */
+    backend?: 'process' | 'host-process' | 'docker' | 'wasm' | 'ssh';
+    /** Required acknowledgement that host-process is not isolated. */
+    acknowledgeHostAccess?: boolean;
+    /** Executable path/name for host-process. Command strings are not accepted. */
+    executable?: string;
+    /** Argument array for host-process. */
+    args?: string[];
+    /** Working directory for host-process. */
+    cwd?: string;
     /** CPU limit (e.g. '0.5'). Docker only. */
     cpu?: string;
     /** Memory limit (e.g. '256m'). Docker only. */
@@ -227,7 +236,7 @@ export interface SandboxConfig {
     timeout?: number;
     /** Allow network access. Default: false */
     network?: boolean;
-    /** Custom Docker image (e.g. 'node:20-slim', 'python:3.12-slim'). Default: 'alpine:latest' */
+    /** Custom Docker image (e.g. 'node:20-slim', 'python:3.12-slim'). Default: 'alpine:3.20' */
     image?: string;
     /** Max PIDs inside container (fork bomb protection). Docker only. */
     pidsLimit?: number;
@@ -263,8 +272,8 @@ export interface SandboxResult {
     duration: number;
 }
 export interface Sandbox {
-    /** Execute a command string in the sandbox */
-    exec(command: string): Promise<SandboxResult>;
+    /** Execute a backend command. host-process is configured with executable + args and accepts no command string. */
+    exec(command?: string): Promise<SandboxResult>;
     /** Destroy / clean up the sandbox */
     destroy(): void;
 }

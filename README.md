@@ -148,9 +148,14 @@ await nope.resolveAndCheck('https://suspicious.com');
 // → { safe: false, reason: 'DNS rebinding: resolves to 10.0.0.1' }
 ```
 
-### Sandbox
+### Execution backends
 
-4 backends: process, Docker, SSH, WASM. Docker supports custom images, `--pids-limit`, `--read-only`, `--user`, seccomp, AppArmor, volumes, persistent containers.
+NOPE never silently falls back to host execution. Callers must select a backend explicitly.
+
+- **Docker** is the package's isolation boundary and defaults to no network, dropped capabilities, `no-new-privileges`, CPU/memory limits, and the pinned `alpine:3.20` image.
+- **SSH** transports a command to a separately administered remote host. SSH is transport, not sandboxing.
+- **host-process** is explicitly unsafe and runs as the current OS user. It requires `acknowledgeHostAccess: true` and accepts only an executable plus an argument array—never a shell command string.
+- **WASM** shell execution is unavailable. Native commands are not WASI modules, and NOPE will not downgrade them to host execution.
 
 ```typescript
 const sb = nope.sandbox({
@@ -158,6 +163,15 @@ const sb = nope.sandbox({
   pidsLimit: 256, readonlyRoot: true, user: 'nobody',
 });
 await sb.exec('echo hello');
+
+// Trusted host automation only — this is not isolation.
+const host = nope.sandbox({
+  backend: 'host-process',
+  acknowledgeHostAccess: true,
+  executable: process.execPath,
+  args: ['trusted-script.mjs'],
+});
+await host.exec();
 ```
 
 ### Scanners
