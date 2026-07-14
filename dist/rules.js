@@ -5,18 +5,22 @@
 // ── Helpers ─────────────────────────────────────────────────
 /** Check if any string value in params matches a regex */
 function paramsMatch(action, pattern) {
+    const matches = (value) => {
+        pattern.lastIndex = 0;
+        return pattern.test(value);
+    };
     const check = (val) => {
         if (typeof val === 'string')
-            return pattern.test(val);
+            return matches(val);
         if (Array.isArray(val))
             return val.some(check);
         if (val && typeof val === 'object')
             return Object.values(val).some(check);
         return false;
     };
-    if (action.command && pattern.test(action.command))
+    if (action.command && matches(action.command))
         return true;
-    if (action.code && pattern.test(action.code))
+    if (action.code && matches(action.code))
         return true;
     if (action.params)
         return check(action.params);
@@ -40,7 +44,7 @@ const filesystem = [
         description: 'Delete root or home directory',
         severity: 'critical',
         category: 'filesystem',
-        match: (a) => paramsMatch(a, /rm\s+.*\s+(\/|\/home|\/root|~|\$HOME|C:\\|%USERPROFILE%)/i),
+        match: (a) => paramsMatch(a, /\brm\b[^\r\n;&|]{0,512}\s+(?:\/(?=\s*(?:$|[;&|]))|\/(?:home|root)(?:\/[^\s;&|]*)?(?=\s|$|[;&|])|~(?:\/[^\s;&|]*)?(?=\s|$|[;&|])|\$HOME(?:\/[^\s;&|]*)?(?=\s|$|[;&|])|[A-Za-z]:\\(?=\s|$|[;&|])|%USERPROFILE%(?:\\[^\s;&|]*)?(?=\s|$|[;&|]))/i),
     },
     {
         id: 'fs-format',
@@ -342,7 +346,7 @@ const exfiltration = [
         description: 'Uploading sensitive files to external URLs',
         severity: 'critical',
         category: 'exfiltration',
-        match: (a) => paramsMatch(a, /\b(curl|wget|http).*(-F|--upload-file|--data-binary)\s+.*\.(env|pem|key|credentials)\b/i),
+        match: (a) => paramsMatch(a, /\b(?:curl|wget|https?)\b[^\r\n;&|]{0,1024}(?:-F\b|--upload-file\b|--data-binary\b)[^\r\n;&|]{0,512}\.(?:env|pem|key|credentials)\b/i),
     },
     {
         id: 'exfil-tar-pipe',
